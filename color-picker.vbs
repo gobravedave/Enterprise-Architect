@@ -4,7 +4,7 @@
 ' Purpose: utilise standard html color name and the corresponding hex values
 ' Date: 14-Feb_2019
 '
-dim color_array (140,2)
+dim color_array (154,2)
 'loadup color_array
 color_array(0,0)="#BLACK"
 color_array(0,1)="#000000"
@@ -288,7 +288,34 @@ color_array(139,0)="#IVORY"
 color_array(139,1)="#FFFFF0"
 color_array(140,0)="#WHITE"
 color_array(140,1)="#FFFFFF"
-
+color_array(141,0)="#DARKSLATEGRAY"
+color_array(141,1)="#2F4F4F"
+color_array(142,0)="#DIMGRAY"
+color_array(142,1)="#696969"
+color_array(143,0)="#SLATEGRAY"
+color_array(143,1)="#708090"
+color_array(144,0)="#LIGHTSLATEGRAY"
+color_array(144,1)="#778899"
+color_array(145,0)="#GRAY"
+color_array(145,1)="#808080"
+color_array(146,0)="#DARKGRAY"
+color_array(146,1)="#A9A9A9"
+color_array(147,0)="#LIGHTGRAY"
+color_array(147,1)="#D3D3D3"
+color_array(148,0)="#DARKSLATEGRAY"
+color_array(148,1)="#2F4F4F"
+color_array(149,0)="#APPLICATION"
+color_array(149,1)="#ADD8E7"
+color_array(150,0)="#IMPLEMENTATION"
+color_array(150,1)="#FFC0CC"
+color_array(151,0)="#MOTIVATION"
+color_array(151,1)="#9370DC"
+color_array(152,0)="#MOTIVATION"
+color_array(152,1)="#9370DC"
+color_array(153,0)="#PYSICAL"
+color_array(153,1)="#98FB99"
+color_array(154,0)="#TECHNOLOGY"
+color_array(154,1)="#90EE91"
 
 function ColorHexByName (colorName) 
 dim i
