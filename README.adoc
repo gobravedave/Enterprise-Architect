@@ -1,0 +1,134 @@
+:toc:
+:icons: image
+:iconsdir: images
+:imagesdir: images
+//:numbered:
+= README
+
+== Enterprise Architect Sripting
+
+
+The problem however it that the PlantUML script used to generate the diagrams are discrete declarations of behaviour. Validation and alignment against the Domain and or Enterprise landscape would typically be manual and the likely outcome would be model divergence.
+
+The cost savings from the speedy delivery of fit for purpose models is long forgotten when the time comes to make changes.
+
+I do believe there is a middle ground where Enterprise and Delivery teams operating at differing speeds can effectively work together. The solution centres around the ability to exchange models between the modelling platform and the script based diagraming tools.
+
+Enterprise Architect does offer a number of methods for model exchange. The simplest being CSV imports, for high order elements, through to XMI import/export for full element, association and diagrams objects.
+
+PlantUML does support XMI export, however at this point it only applies to Class diagrams.
+
+So one solution to close this gap, I have cobbled together a VBScript to run within Enterprise Architect to allow a modeller to Generate a Sequence Diagram using a PlantUML script.
+
+=== Create a Sequence Diagram in EA using PlantUML 
+
+The following screen shot provide an example of what functionality is offered by the scripts.
+
+* participant types of actor, control, boundary, entity and database
+* boxing timeline elements
+* color coding using either #RGB or HTML standard colors
+* synchronous, asynchronous, return and message to self flows
+* message grouping (alt, loop, critical etc)
+* activate and deactivate of timelines
+* return value and parameters
+
+The following steps outline the process of creating the sequence diagram within Enterprise Architect:
+
+. create a new sequence diagram
+. add a note element and paste the desired plantUML script into it
+. right click the Note element and select *_Create Sequence Diagram via PlantUML_* the following diagram is created
+
+image:xxxx-sequence-diagram.png[Enterprise Architect Sample]
+
+NOTE: EA’s does have some restrictions on the way the flows can be laid out using the API.. and this is especially evident when using nested InteractionFragments. So please check the produced diagram to ensure correct flow placement.
+
+=== Save EA Sequence Diagram as a PlantUML Script
+
+Model Management however is not just about being able to import sequence diagrams. The use case may exist in your organisation where diagrams require to be validated against some Enterprise standards, checking for duplicates within the model, for duplication against an Application Portfolio, naming standards, organisational context; all metadata which extends beyond the basic sequence diagram which has been described.
+
+Hence these diagrams and/or the underlying modelling elements may well be updated within Modelling environment and there is a need to refresh one or more PlantUML scripts.
+
+The following steps outline the process of generating a PlantUML script from a sequence diagram within EA:
+
+. open up an existing sequence diagram
+. add a note element to the sequence diagram
+. right click the Note element and select “Generate PlantUML script”
+. the script will parse the diagram objects and links with the results loaded into the note object.
+
+image:export-sequence-diagram.png[]
+
+This script preceded the import script and was the basis of discovering where various information about the diagram and underlying modelling objects are stored within EA.
+
+Simliar to the Import script, there are a number of backlog items I am considering to introduce including:
+
+* support other diagram types e.g. use case, class diagrams
+* publish directly to confluence pages
+* support titles, dividers and notes
+
+=== Color Picker
+
+Within PlantUML you are able to assign colors to an object or connector by using the the following values:
+
+* Hex RGB value eg #AABBCC
+* Standard HTML Colors eg #LightBlue
+* Special PlantUML names i.e. Application, Implementation, Motivation, Physical & Technology
+
+image:plantuml-colors.png[]
+
+Managing colors in EA is quite a complex topic. Each element type has a default color and it is also possible to apply default colors based on stereotype (via UML type setting or MDG UML Profile) or via shape scripts and driven possibly by a tagged value.
+
+A modeller can override a default cold via the GUI using color palette.
+
+Behind the scenes, Enterprise Architect will store the value of -1 if a default color is to be applied. If the default has been updated by the modeller, then the value is a decimal representation of the Blue Green Red components of the color is stored.
+
+Hence the need to have a sub routine to allow a PlantUML color code to be converted into the decimal equivalent to be applied to an EA modelling element during the Create Sequence Diagram script.
+
+Likewise when Generating the PlantUML script there is a requirement to take the decimal version and output the #colorname or #rrggbb value.
+
+The common functions available are:
+
+* ColorHexByName (colorName) where a #colorname is supplied as input and the hex RGB value is returned
+* ColorNameByHex (colorHex) where a hex RGB is supplied and the color name, if exists is returned
+
+=== Backlog Items
+
+The following features will be added overtime.
+
+* autonum
+* header and footer
+* coloring of the flows & activations
+* notes
+* dividers
+* dialogue box to select PlantUML script from file the source repository or confluence page
+* support other diagram types e.g. use case, class diagrams
+* publish directly to confluence pages
+
+=== Installation Instructions
+
+//All scripts are included in the link:MyModel.EAP[MyModel.EAP] within this github repo.
+
+//Which were created using the following rather manual method:
+
+Activate the the script manager window with EA
+
+. Create a new Diagram Scripting Group and name it “PlantUML“
+. Create a new VBScripts and name it “Create Sequence Diagram via PlantUML“
+. Cope and paste the contents of the file downloaded
+. Creates a new Normal Scripting Group and name it “Common“
+. Create a VBScript for each of the following vbs files downloaded:
+* color-picker
+* Print-Array
+* Sort-Array
+
+image:ea-scripting.png[]
+
+[NOTE]
+===============================
+
+This Scripting facility is available in the Corporate, Unified and Ultimate editions.
+
+If you intend to use the Scripting facility under Crossover/WINE, you must also install Internet Explorer version 6.0 or above.
+
+Script names are case sensitive.
+
+===============================
