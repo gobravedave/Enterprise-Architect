@@ -7,7 +7,6 @@
 
 == Enterprise Architect Sripting
 
-
 The problem however it that the PlantUML script used to generate the diagrams are discrete declarations of behaviour. Validation and alignment against the Domain and or Enterprise landscape would typically be manual and the likely outcome would be model divergence.
 
 The cost savings from the speedy delivery of fit for purpose models is long forgotten when the time comes to make changes.
@@ -58,12 +57,6 @@ The following steps outline the process of generating a PlantUML script from a s
 image:export-sequence-diagram.png[]
 
 This script preceded the import script and was the basis of discovering where various information about the diagram and underlying modelling objects are stored within EA.
-
-Simliar to the Import script, there are a number of backlog items I am considering to introduce including:
-
-* support other diagram types e.g. use case, class diagrams
-* publish directly to confluence pages
-* support titles, dividers and notes
 
 === Color Picker
 
