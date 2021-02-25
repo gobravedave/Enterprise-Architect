@@ -7,6 +7,8 @@
 
 == Enterprise Architect Sripting
 
+https://plantuml.com/[PlantUML] is awesome; it is accessible, easy to use and you produce nice looking diagrams with minimal effort in a short period of time. The PlantUML script can be published and made available for collaboration.
+
 The problem however it that the PlantUML script used to generate the diagrams are discrete declarations of behaviour. Validation and alignment against the Domain and or Enterprise landscape would typically be manual and the likely outcome would be model divergence.
 
 The cost savings from the speedy delivery of fit for purpose models is long forgotten when the time comes to make changes.
@@ -23,25 +25,32 @@ So one solution to close this gap, I have cobbled together a VBScript to run wit
 
 The following screen shot provide an example of what functionality is offered by the scripts.
 
-* participant types of actor, control, boundary, entity and database
+* participant types of actor, control, boundary, entity and database (will automatically create if not specifically declared in the script)
 * boxing timeline elements
 * color coding using either #RGB or HTML standard colors
 * synchronous, asynchronous, return and message to self flows
 * message grouping (alt, loop, critical etc)
 * activate and deactivate of timelines
 * return value and parameters
+* autonum
+* header and footer
+* sterotypes
+* coloring of the flows
+* notes
+* dividers
 
 The following steps outline the process of creating the sequence diagram within Enterprise Architect:
 
 . create a new sequence diagram
 . add a note element and paste the desired plantUML script into it
-. right click the Note element and select *_Create Sequence Diagram via PlantUML_* the following diagram is created
+. right click the Note element and select *_Run PlantUML Script_* the following diagram is created
 
+.Sample Generated Sequence Diagram
 image:xxxx-sequence-diagram.png[Enterprise Architect Sample]
 
 NOTE: EA’s does have some restrictions on the way the flows can be laid out using the API.. and this is especially evident when using nested InteractionFragments. So please check the produced diagram to ensure correct flow placement.
 
-=== Save EA Sequence Diagram as a PlantUML Script
+=== Create a PlantUML Script from a Sequence Diagram In Enterprise Architecht
 
 Model Management however is not just about being able to import sequence diagrams. The use case may exist in your organisation where diagrams require to be validated against some Enterprise standards, checking for duplicates within the model, for duplication against an Application Portfolio, naming standards, organisational context; all metadata which extends beyond the basic sequence diagram which has been described.
 
@@ -54,7 +63,8 @@ The following steps outline the process of generating a PlantUML script from a s
 . right click the Note element and select “Generate PlantUML script”
 . the script will parse the diagram objects and links with the results loaded into the note object.
 
-image:export-sequence-diagram.png[]
+.Sample Generated Generation of PlantUML Script
+image:generatePlantUMLscript.gif[]]
 
 This script preceded the import script and was the basis of discovering where various information about the diagram and underlying modelling objects are stored within EA.
 
@@ -66,6 +76,7 @@ Within PlantUML you are able to assign colors to an object or connector by using
 * Standard HTML Colors eg #LightBlue
 * Special PlantUML names i.e. Application, Implementation, Motivation, Physical & Technology
 
+.:PlantUML Color Pallete
 image:plantuml-colors.png[]
 
 Managing colors in EA is quite a complex topic. Each element type has a default color and it is also possible to apply default colors based on stereotype (via UML type setting or MDG UML Profile) or via shape scripts and driven possibly by a tagged value.
@@ -87,33 +98,32 @@ The common functions available are:
 
 The following features will be added overtime.
 
-* autonum
-* header and footer
-* coloring of the flows & activations
-* notes
-* dividers
 * dialogue box to select PlantUML script from file the source repository or confluence page
 * support other diagram types e.g. use case, class diagrams
+* color coding activations
+* Notes overlay of one or more timelines
 * publish directly to confluence pages
+* autonumber paramaters 
 
 === Installation Instructions
 
-//All scripts are included in the link:MyModel.EAP[MyModel.EAP] within this github repo.
+All scripts are included in the link:MyModel.EAP[MyModel.EAP] within this github repo.
 
-//Which were created using the following rather manual method:
+Which were created using the following rather manual method:
 
 Activate the the script manager window with EA
 
-. Create a new Diagram Scripting Group and name it “PlantUML“
-. Create a new VBScripts and name it “Create Sequence Diagram via PlantUML“
-. Cope and paste the contents of the file downloaded
-. Creates a new Normal Scripting Group and name it “Common“
-. Create a VBScript for each of the following vbs files downloaded:
+. Create a new Diagram Scripting Group and load it up with: 
+* Run PlantUML Script
+* Generate PlantUML Script
+. Creates a new Normal Scripting Group and name it *_PlantUML_* and load it up with the variouos diagram specific scrfipts as per thre scripting manager screen shot
+. Create another normal VBScript group, this one is to be called *_Common_* and load it up with the following:
 * color-picker
 * Print-Array
 * Sort-Array
 
-image:ea-scripting.png[]
+.EA Script Maanger
+image:EAscriptManager.jpg[EA Script MAanger]
 
 [NOTE]
 ===============================
