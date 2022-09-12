@@ -12,6 +12,7 @@
 '					- non decalred participants
 '					- non space delimitered sequences 
 '					- notes left/right and over
+' 12-Sep-2022:  fix parsing logic for ->> and <<-
 '
 dim timeline_array (99,7)			'store timeline elements 
 dim sequence_array (99,7)			'store interations
@@ -323,19 +324,25 @@ LOGLEVEL_SAVE = LOGLEVEL
 	end if
 	
 	'parse to ensure sufficient delimiters to support processing
-	if instr(script,"-&gt; &gt;") > 0 then
-		script = replace(script, "-&gt; &gt;", " -&gt;&gt; ")
+	if instr(script,"-&gt;&gt;") > 0 then
 	else
-		if instr(script,"-&gt;") > 0 then
-			script = replace(script, "-&gt;", " -&gt; ")
+		if instr(script,"-&gt; &gt;") > 0 then
+			script = replace(script, "-&gt; &gt;", " -&gt;&gt; ")
+		else
+			if instr(script,"-&gt;") > 0 then
+				script = replace(script, "-&gt;", " -&gt; ")
+			end if
 		end if
 	end if
-
-	if instr(script,"-&lt; &lt;") > 0 then
-		script = replace(script, "-&lt; &lt;", " -&lt;&lt; ")
+	
+	if instr(script,"&lt;&lt;-") > 0 then
 	else
-		if instr(script,"-&lt;") > 0 then
-			script = replace(script, "-&lt;", " -&lt; ")
+		if instr(script,"&lt; &lt;-") > 0 then
+			script = replace(script, "&lt; &lt;-", " &lt;&lt;- ")
+		else
+			if instr(script,"&lt;-") > 0 then
+				script = replace(script, "&lt;-", " &lt;- ")
+			end if
 		end if
 	end if
 	
