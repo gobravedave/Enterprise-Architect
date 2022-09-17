@@ -11,21 +11,20 @@ option explicit
 !INC PlantUML.Create-Sequence-Diagram
 !INC PlantUML.Create-UseCase-Diagram
 
-'LOGLEVEL=LOGLEVEL_ERROR
-LOGLEVEL=LOGLEVEL_INFO
-'LOGLEVEL=LOGLEVEL_WARNING
-'LOGLEVEL=LOGLEVEL_DEBUG
-'LOGLEVEL=LOGLEVEL_TRACE
-
+'LOGLEVEL=0		'ERROR
+'LOGLEVEL=1		'INFO
+LOGLEVEL=2		'WARNING
+'LOGLEVEL=3		'DEBUG
+'LOGLEVEL=4		'TRACE
 '
-' Script Name: RunPlantUMLScript
+' Script Name: Run PlantUML Script
 ' Author: David Anderson
-' Purpose: Wrapper script to appear in the Diagram Srripting group  
+' Purpose: Wrapper script to appear in the Diagram Scripting group  
 ' 		   responsible for directing to the relevant script by diagram type.  
 ' Date: 11-March-2019
 '
-dim currentDiagram as EA.Diagram
-dim currentPackage as EA.Package
+Dim currentDiagram as EA.Diagram
+Dim currentPackage as EA.Package
 Dim selectedObject as EA.DiagramObject
 Dim theSelectedElement as EA.Element
 

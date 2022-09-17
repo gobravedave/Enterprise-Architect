@@ -13,10 +13,17 @@
 '					- non space delimitered sequences 
 '					- notes left/right and over
 ' 12-Sep-2022:  fix parsing logic for ->> and <<-
+' 17-Sep-2022:  fix parsing logic for --> and <--
+'				trim plantuml line to fix parsing (thanks Takashi-K-TakaTech)
+'				fix when resolving isReturn
+'				handle resizing of multiple boxes
+'				ignore CREATE, DESTROY, ... (thanks mcagnion)
+'				Unnamed groups are now handled
+'				improve note layout processing
 '
 dim timeline_array (99,7)			'store timeline elements 
 dim sequence_array (99,7)			'store interations
-dim layout_array (99, 7)			'store coridinates of all sequences and fragments that needs to be positioned
+dim layout_array (99, 7)			'store cooridinates of all sequences and fragments that needs to be positioned
 dim t								'timeline array index
 dim s								'sequence array index
 dim l								'layout array index
@@ -45,12 +52,14 @@ sub CreateSequenceDiagram ()
 	and theSelectedElement.Type = "Note" then
 		'split note..
 		'call LOGDebug( "PlantUML")
+		
 		dim i
 		left=30						'set initial 
 		fragment_level=0
 		PlantUML = Split(theSelectedElement.Notes,vbcrlf,-1,0)
 		for i = 0 to Ubound(PlantUML)
-			'call LOGDebug ( "Processing: " & PlantUML(i) )
+			call LOGDebug ( "Processing #" & i & " :" & PlantUML(i) )
+			PlantUML(i) = Trim(PlantUML(i))
 			if not PlantUML(i) = "" then
 				if not Asc(PlantUML(i)) = 39  then
 					if multiline_note = True then
@@ -58,9 +67,8 @@ sub CreateSequenceDiagram ()
 					else
 						word=split(PlantUML(i))
 						select case ucase(word(0))
-							case "@STARTUML" 	'call LOGDebug ( "skip: " & PlantUML(i) )		'ignore
 							case "AUTONUMBER"	autonumber = True
-							case "AUTOACTIVATE"	'call LOGDebug ( "skip: " & PlantUML(i) )		'ignore
+							'timeline
 							case "TITLE"		create_title(PlantUML(i))
 							case "ACTOR"		create_timeline(PlantUML(i))
 							case "PARTICIPANT"	create_timeline(PlantUML(i))
@@ -70,19 +78,26 @@ sub CreateSequenceDiagram ()
 							case "COLLECTIONS"	create_timeline(PlantUML(i))
 							case "DATABASE"		create_timeline(PlantUML(i))
 							case "BOX"			create_timeline(PlantUML(i))
+							'fragments
 							case "END" 			resize_diagramObject(PlantUML(i))			'box or a partition
-							case "ACTIVATE" 	'call LOGDebug ( "skip: " & PlantUML(i) )		'ignore
-							case "DEACTIVATE" 	'call LOGDebug ( "skip: " & PlantUML(i) )		'ignore
-							case "ALT" 			create_fragment(PlantUML(i))				'add fragment
-							case "OPT" 			create_fragment(PlantUML(i))				'add fragment
-							case "BREAK" 		create_fragment(PlantUML(i))				'add fragment
-							case "LOOP" 		create_fragment(PlantUML(i))				'add fragment
-							case "CRITICAL" 	create_fragment(PlantUML(i))			 	'add fragment
-							case "==" 			create_fragment(PlantUML(i))			 	'add seq fragment as divider						
+							case "ALT" 			create_fragment(PlantUML(i))				
+							case "OPT" 			create_fragment(PlantUML(i))				
+							case "BREAK" 		create_fragment(PlantUML(i))				
+							case "LOOP" 		create_fragment(PlantUML(i))				
+							case "CRITICAL" 	create_fragment(PlantUML(i))			 	
+							case "==" 			create_fragment(PlantUML(i))			 	'add divider as seq fragment					
 							case "ELSE" 		add_partition(PlantUML(i)) 					'add partition to fragment
 							case "NOTE"			process_note(PlantUML(i))					'process note
-							case "@ENDUML" 		'call LOGDebug ( "skip: " & PlantUML(i) )		'ignore
-							case else			create_sequence(PlantUML(i))				'replace with a regex expression to make sure sctipt line si indeed a sequence
+							'ignore
+							case "@STARTUML" 	'LOGWarning ( "skip: " & PlantUML(i) )		
+							case "AUTOACTIVATE"	LOGWarning ( "skip: " & PlantUML(i) )		
+							case "ACTIVATE" 	LOGWarning ( "skip: " & PlantUML(i) )		
+							case "DEACTIVATE" 	LOGWarning ( "skip: " & PlantUML(i) )		
+							case "CREATE" 		LOGWarning ( "skip: " & PlantUML(i) )		
+							case "DESTROY" 		LOGWarning ( "skip: " & PlantUML(i) )		
+							case "@ENDUML" 		'call LOGDebug ( "skip: " & PlantUML(i) )
+							'sequence
+							case else			create_sequence(PlantUML(i))				'replace with a regex expression to make sure script line is indeed a sequence
 						end select
 					end if
 				end if
@@ -92,7 +107,7 @@ sub CreateSequenceDiagram ()
 		call LOGDebug( "**Timeline Array**" )
 		Call PrintArray (timeline_array,0,t-1)
 		
-		call layout_objects()							'set relative coordinates of seqeunces & fragments
+		call layout_objects()							'set relative coordinates of sequeuces & fragments
 		
 		call LOGDebug( "**Layout Array**" )
 		Call PrintArray (layout_array,0,l-1)
@@ -276,6 +291,7 @@ dim diagramObject as EA.DiagramObject
 						exit for
 					end if
 				next
+			exit for
 			end if
 		next
 	else
@@ -324,28 +340,48 @@ LOGLEVEL_SAVE = LOGLEVEL
 	end if
 	
 	'parse to ensure sufficient delimiters to support processing
-	if instr(script,"-&gt;&gt;") > 0 then
+	if instr(script,"--&gt;&gt;") > 0 then
+		LOGWarning ( "-->> is invalid.. converting to ->>")	 
+		script = replace(script, "--&gt;&gt;", " -&gt;&gt; ")
 	else
-		if instr(script,"-&gt; &gt;") > 0 then
-			script = replace(script, "-&gt; &gt;", " -&gt;&gt; ")
+		if instr(script,"-&gt;&gt;") > 0 then
+			script = replace(script, "-&gt;&gt;", " -&gt;&gt; ")
 		else
-			if instr(script,"-&gt;") > 0 then
-				script = replace(script, "-&gt;", " -&gt; ")
+			if instr(script,"-&gt; &gt;") > 0 then
+				script = replace(script, "-&gt; &gt;", " -&gt;&gt; ")
+			else
+				if instr(script,"--&gt;") > 0 then
+					script = replace(script, "--&gt;", " --&gt; ")
+				else		
+					if instr(script,"-&gt;") > 0 then
+						script = replace(script, "-&gt;", " -&gt; ")
+					end if
+				end if
 			end if
 		end if
 	end if
 	
 	if instr(script,"&lt;&lt;-") > 0 then
+		script = replace(script, "&lt;&lt;-", " &lt;&lt;- ")
 	else
 		if instr(script,"&lt; &lt;-") > 0 then
 			script = replace(script, "&lt; &lt;-", " &lt;&lt;- ")
 		else
-			if instr(script,"&lt;-") > 0 then
-				script = replace(script, "&lt;-", " &lt;- ")
+			if instr(script,"&lt;--") > 0 then
+				script = replace(script, "&lt;--", " &lt;-- ")
+			else
+				if instr(script,"&lt;-") > 0 then
+					script = replace(script, "&lt;-", " &lt;- ")
+				end if
 			end if
 		end if
 	end if
 	
+	script = replace(script, "++", "")
+	script = replace(script, "--:", ":")
+	script = replace(script, "--: ", ":")
+	
+
 	script = replace(script, ":", " : ")
 	script = replace(script, "  ", " ")
 	call LOGTrace( "parsedScript: " & script)
@@ -446,13 +482,17 @@ dim element as EA.Element
 dim diagramObjects as EA.Collection
 dim diagramObject as EA.DiagramObject
 dim diagramObjectName
-dim i
+dim i						' position of space character
 dim fragmentName
+dim fragmentType
 
 	'create element
 	i = instr(script, " ") 'postion to 1st char after key word
 	if i > 0 then
+		fragmentType = mid(script,1, i-1)
 		fragmentName = mid(script, i+1)
+	else
+		fragmentType = script
 	end if
 	
 	'remove trialing == of divider
@@ -462,7 +502,7 @@ dim fragmentName
 	set element = elements.AddNew( fragmentName, "InteractionFragment" )
 	'handle when name is not supplied eg loop
 
-	element.Subtype = fragment_type(mid(script,1, i-1))
+	element.Subtype = fragment_type(fragmentType)
 	element.Update
 	elements.Refresh
 	call LOGInfo( "added fragment: " & fragmentName & " (" & element.ElementID & ")" )
@@ -536,18 +576,18 @@ LOGLEVEL_SAVE = LOGLEVEL
 			call contsruct_note(script)
 		else	
 			i = inStr(script, ":")
-			'call LOGDebug( "offset for : = " & i & " of " & len(script))
+			call LOGDebug( "offset for : = " & i & " of " & len(script))
 			'plantuml doesnot recognise note:.. so assume anything after note and before the colon controls layout
 			if i > 0 then								'single line note
 				noteName = Mid(script, 5, i-5)
-				'call LOGDebug( "noteName : = " & noteName)
+				call LOGDebug( "noteName : = " & noteName)
 				call contsruct_note(right(script, len(script)-i))
 				call add_note()
 			else
 				multiline_note = True
 				noteName = right(script, len(script)-5)
 				note=""
-				r = 0
+				'r = 0
 			end if
 		end if
 	end if
@@ -573,7 +613,7 @@ dim i
 		end if
 		n=n+1
 	next
-	'call LOGDebug( "note* (" & note & ":" & n & ")")
+	call LOGDebug( "note* (" & note & ":" & n & ")")
 	
 end sub
 
@@ -767,7 +807,7 @@ function isReturn(arrow)
 	call LOGTrace("isReturn(" & arrow & ")")
 	if 	arrow = "--&gt;" or _ 
 		arrow = "-->" or _
-	 	arrow = "&gt;--" or _ 
+	 	arrow = "&lt;--" or _ 
 		arrow = "<--"then
 		isReturn = 1
 	else
@@ -808,10 +848,10 @@ dim bottom
 
 dim LOGLEVEL_SAVE
 LOGLEVEL_SAVE = LOGLEVEL
-'LOGLEVEL=3		'DEBUG
+'LOGLEVEL=4		'DEBUG
 	call LOGTrace("layout_Objects()")
 
-	'LOGDebug ("layout array count l-1=" & l-1 & " Ubound(layout_array)=" & Ubound(layout_array))
+	LOGDebug ("layout array count l-1=" & l-1 & " Ubound(layout_array)=" & Ubound(layout_array))
 	for i = 0 to l-1
 		'call calculate heights (reursively) 
 		select case layout_array(i,1)
@@ -939,7 +979,7 @@ LOGLEVEL_SAVE = LOGLEVEL
 			element.Update
 		end if
 		if layout_array(i,1) = "Note" then
-			'LOGDebug ("i="& i & ":Processing Note "  & layout_array (i,2)) 
+			LOGDebug ("i="& i & ":Processing Note "  & layout_array (i,2)) 
 			'add diagramobject
 			diagramObjectName= "l=" & layout_array (i,6) & ";r=" & layout_array (i,7) & ";t=" & layout_array (i,4) & ";b=" & layout_array (i,3)
 			set diagramObject = currentDiagram.DiagramObjects.AddNew(diagramObjectName, layout_array (i,1))
@@ -976,7 +1016,7 @@ LOGLEVEL_SAVE = LOGLEVEL
 			call LOGDebug( "*timeline (" & timeline_array(i,0) & ") to be resized")
 			for each diagramObject in currentDiagram.DiagramObjects
 				if diagramObject.ElementID = timeline_array(i,0) then
-					diagramObject.bottom = bottom - 5
+					diagramObject.bottom = bottom - 15
 					diagramObject.Update
 					exit for
 				end if
@@ -1180,10 +1220,17 @@ dim element as EA.Element
 	'get element
 	set element = Repository.GetElementByID(layout_array (i,2))
 	'split element.name
+	call LOGDebug("element.name=" & element.name)
+
 	word=split(element.Name)
+	
 	if ucase(word(0)) = "LEFT" then
 		'get timeline based on name
-		j=timelineIndexByName(word(2))	
+		if ucase(element.Name) = "LEFT" then
+			j=0					'no timeline provide so default to first
+		else
+			j=timelineIndexByName(word(2))
+		end if
 		'calculate left
 		layout_array(i,6) = timeline_array(j,5) - 80
 		if layout_array(i,6) < 0 then
@@ -1193,27 +1240,31 @@ dim element as EA.Element
 		layout_array(i,7) = timeline_array(j,5) + 35
 	else
 		if ucase(word(0)) =  "RIGHT" then
-			'get timeline based on name
-			j=timelineIndexByName(word(2))	
+			if ucase(element.Name) = "RIGHT" then
+				j=t-1					'no timeline provide so default to last
+			else
+				'get timeline based on name
+				j=timelineIndexByName(word(2))	
+			end if
 			'calculate left
 			layout_array(i,6) = timeline_array(j,6) - 35
 			'set right based on timeline left
 			layout_array(i,7) = timeline_array(j,6) + 80
 		else									
 			'over one timeline
-			'call LOGDebug("over(" & word(1) & " of " & ubound(word) & ")")
+			call LOGDebug("over(" & word(1) & " of " & ubound(word) & ")")
 			word(1) = replace(word(1), ",", "")		'remove comma
 			j=timelineIndexByName(word(1))	
-			'call LOGDebug("t1(" & layout_array(i,4) & "):b1(" & layout_array(i,5) & ")")
-			'call LOGDebug("l1(" & layout_array(i,6) & "):r1(" & layout_array(i,7) & ")")
-			'call LOGDebug("l2(" & timeline_array(j,5) & "):r2(" & timeline_array(j,6) & ")")
+			call LOGDebug("t1(" & layout_array(i,4) & "):b1(" & layout_array(i,5) & ")")
+			call LOGDebug("l1(" & layout_array(i,6) & "):r1(" & layout_array(i,7) & ")")
+			call LOGDebug("l2(" & timeline_array(j,5) & "):r2(" & timeline_array(j,6) & ")")
 			layout_array(i,6) = timeline_array(j,5) 
 			layout_array(i,7) = timeline_array(j,6)
 			if ubound(word) > 1 then
 				j=timelineIndexByName(word(2))	
-				'call LOGDebug("t1(" & layout_array(i,4) & "):b1(" & layout_array(i,5) & ")")
-				'call LOGDebug("l1(" & layout_array(i,6) & "):r1(" & layout_array(i,7) & ")")
-				'call LOGDebug("l2(" & timeline_array(j,5) & "):r2(" & timeline_array(j,6) & ")")
+				call LOGDebug("t1(" & layout_array(i,4) & "):b1(" & layout_array(i,5) & ")")
+				call LOGDebug("l1(" & layout_array(i,6) & "):r1(" & layout_array(i,7) & ")")
+				call LOGDebug("l2(" & timeline_array(j,5) & "):r2(" & timeline_array(j,6) & ")")
 				if timeline_array(j,5) < layout_array(i,6) then
 					layout_array(i,6) = timeline_array(j,5)
 				end if
@@ -1229,7 +1280,7 @@ end sub
 function timelineIndexById(timelineId )
 dim i
 	call LOGTrace("timelineIndexById(" & timelineId & ")")
-	'call LOGDebug("t=" & t)
+	call LOGDebug("t=" & t)
 
 	for i = 0 to t-1
 		if timelineId = timeline_array(i,0) then				'check using element id
@@ -1245,7 +1296,7 @@ end function
 function timelineIndexByName(timelineName)
 dim i
 	call LOGTrace("timelineIndexByName(" & timelineName & ")")
-	'call LOGDebug("t=" & t)
+	call LOGDebug("t=" & t)
 
 	for i = 0 to t-1
 		if timelineName = timeline_array(i,2) then				'check using element name
