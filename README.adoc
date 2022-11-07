@@ -117,8 +117,7 @@ Some limitations/half baked functionality..
 * I did not nail the layout of objects especially if there are nested boundaries. I thought the EA GUI would do heaps better job.
 * I focussed on the Container view (class).. so Context and Component views could be buggy
 * no dynamic sterotype creating
-* default color support
-* sterotyped connectors does not pickup the UML styling
+* sterotyped connectors do not pickup the UML styling
 
 === Create a PlantUML Script from a Sequence or C4 Diagram In Enterprise Architecht
 
