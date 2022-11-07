@@ -21,12 +21,12 @@
 '				Unnamed groups are now handled
 '				improve note layout processing
 '
+' 15-Sep-2022:	Refactor to support C4 Diargams
+'
 dim timeline_array (99,7)			'store timeline elements 
 dim sequence_array (99,7)			'store interations
-dim layout_array (99, 7)			'store cooridinates of all sequences and fragments that needs to be positioned
 dim t								'timeline array index
 dim s								'sequence array index
-dim l								'layout array index
 dim fragment_level					'fragment level indicator
 dim partition_level					'partition level within a fragment
 dim left
@@ -68,8 +68,8 @@ sub CreateSequenceDiagram ()
 						word=split(PlantUML(i))
 						select case ucase(word(0))
 							case "AUTONUMBER"	autonumber = True
-							'timeline
 							case "TITLE"		create_title(PlantUML(i))
+							'timeline
 							case "ACTOR"		create_timeline(PlantUML(i))
 							case "PARTICIPANT"	create_timeline(PlantUML(i))
 							case "BOUNDARY"		create_timeline(PlantUML(i))

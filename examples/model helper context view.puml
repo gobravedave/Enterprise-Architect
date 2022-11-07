@@ -1,0 +1,36 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Context.puml
+
+'LAYOUT_TOP_DOWN()
+'LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+title Model Helper Context View
+AddElementTag('Service', $shape=EightSidedShape(), $legendText='service (eight sided)')
+AddRelTag(Alert, $textColor='red', $lineColor='red', $lineStyle = DashedLine(), $legendText='Alert')
+AddRelTag(Synchronous, $textColor='black', $lineColor='dimgrey',$legendText='Synchronous')
+AddRelTag(Asynchronous,$textColor='black', $lineColor='dimgrey', $lineStyle = DashedLine(), $legendText='Asynchronous')
+Person(critics, "Interested Parties")
+System(docs, "Architecture Documents")
+System(Visual_Studio_Code, "Visual Studio Code")
+System(helper, "model helper","Set of tools and knowledge articles to help create beautiful and intuitive models easily.")
+System(PlantUML, PlantUML)
+System(EA, "Enterprise Archtecht")
+System(Confluence, Confluence)
+System(GitHub, GitHub)
+Person(mod, Modeller)
+Rel(helper,EA,"extends","")
+Rel(helper,PlantUML,"extends","")
+Rel(Visual_Studio_Code,PlantUML,"includes","")
+Rel(Visual_Studio_Code,GitHub,"manage source","")
+Rel(mod,EA,"use","")
+Rel(mod,helper,"use","")
+Rel(mod,Visual_Studio_Code,"use","")
+Rel(critics,Confluence,"read and comment","")
+Rel(critics,docs,"view","")
+Rel(GitHub,Confluence,"publish to","")
+Rel(EA,docs,"generates","")
+SHOW_LEGEND()
+@enduml
+

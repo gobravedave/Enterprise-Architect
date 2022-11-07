@@ -433,7 +433,7 @@ function color(elementType, BackgroundColor)
 
 dim hexvalue
 dim hexRGB
-	call LOGTrace("color(" & elementType & ":" & BackgroundColor & ")")
+	'call LOGTrace("color(" & elementType & ":" & BackgroundColor & ")")
 	if BackgroundColor = -1 then
 		select case elementType
 			case "Sequence" 	color = "#lightblue"
@@ -455,7 +455,7 @@ dim hexRGB
 		end if
 '		call LOGDebug( "hexColor=" & color)
 	end if 
-	call LOGTrace("color=" & color)
+'	call LOGTrace("color=" & color)
 	
 end function
 

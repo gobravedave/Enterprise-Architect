@@ -10,6 +10,7 @@ option explicit
 !INC PlantUML.Create-Deployment-Diagram
 !INC PlantUML.Create-Sequence-Diagram
 !INC PlantUML.Create-UseCase-Diagram
+!INC PlantUML.Create-C4-Diagram
 
 'LOGLEVEL=0		'ERROR
 'LOGLEVEL=1		'INFO
@@ -23,10 +24,15 @@ LOGLEVEL=2		'WARNING
 ' 		   responsible for directing to the relevant script by diagram type.  
 ' Date: 11-March-2019
 '
+' 25-Sept-2022:		Support C4 Diagrams
+'
 Dim currentDiagram as EA.Diagram
 Dim currentPackage as EA.Package
 Dim selectedObject as EA.DiagramObject
 Dim theSelectedElement as EA.Element
+
+dim layout_array (99, 7)			'store cooridinates of all sequences and fragments that needs to be positioned
+dim l								'layout array index
 
 sub OnDiagramScript()
 	'Show the script output window
@@ -41,9 +47,9 @@ sub OnDiagramScript()
 		dim selectedObjects as EA.Collection
 		set selectedObjects = currentDiagram.SelectedObjects
 		if selectedObjects.Count = 1 then
-			' One or more diagram objects are selected
 			set selectedObject = selectedObjects.GetAt (0)
 			set theSelectedElement = Repository.GetElementByID(selectedObject.ElementID)
+			' One or more diagram objects are selected
 			if not theSelectedElement is nothing _
 				and theSelectedElement.ObjectType = otElement _
 				and theSelectedElement.Type = "Note" then
