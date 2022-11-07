@@ -1,0 +1,85 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+'!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
+
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+'LAYOUT_TOP_DOWN()
+'LAYOUT_AS_SKETCH()
+'LAYOUT_WITH_LEGEND()
+
+title C4 Container View
+
+AddElementTag("Service", $shape=EightSidedShape(), $bgColor='Lightblue',$legendText='service (eight sided)')
+
+AddRelTag(Alert, $textColor="red", $lineColor="red", $lineStyle = DashedLine(), $legendText="console triggered")
+AddRelTag(Synchronous, $textColor="black", $lineColor="dimgrey",$legendText="Synchronous")
+AddRelTag(Asynchronous,$textColor="black", $lineColor="dimgrey", $lineStyle = DashedLine(), $legendText="Asynchronous")
+
+ContainerDb_Ext(Container2, Container2,"storage", "desc")
+Container_Boundary(boundary, boundary){
+Container_Boundary(boundary2, boundary2){
+Container(Container3, Container3,service, $tags='Service', "description")
+ContainerDb_Ext(Container4, Container4,storage, "desc")
+}
+Container(Container1, Container1, "Application")
+}
+Rel(Container1,Container3,"blah","Synchronous", $tags=Synchronous)
+Rel_R(Container3,Container4,"blah2","Alert", $tags=Alert)
+Rel(Container3,Container2,"","Asynchronous", $tags=Asynchronous)
+SHOW_LEGEND()
+@enduml
+
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+'LAYOUT_TOP_DOWN()
+'LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+title C4 Container View
+AddElementTag('Service', $shape=EightSidedShape(), $legendText='service (eight sided)')
+AddRelTag(Alert, $textColor="red", $lineColor="red", $lineStyle = DashedLine(), $legendText='Alert')
+AddRelTag(Synchronous, $textColor='black', $lineColor='dimgrey',$legendText='Synchronous')
+AddRelTag(Asynchronous,$textColor='black', $lineColor='dimgrey', $lineStyle = DashedLine(),$legendText='Asynchronous')
+
+Container(Container1, Container1, Application,"go")
+ContainerDb(Container2, Container2, Storage,"BigQuery")
+Container_Boundary(Check_this_out, "Check this out"){
+Container(Container3, Container3, Service, $tags='Service',"Restful API")
+ContainerDb(Container4, Container4, Storage,"Spanner")
+}
+Rel(Container1,Container3,"make it happen","Synchronous")
+Rel(Container3,Container2,"","Asynchronous")
+Rel(Container3,Container4,"","Alert",$tags=Alert)
+SHOW_LEGEND()
+@enduml
+
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+'LAYOUT_TOP_DOWN()
+'LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+title C4 Container View
+AddElementTag('Service', $shape=EightSidedShape(), $legendText='service (eight sided)')
+AddRelTag(Alert, $textColor='red', $lineColor='red', $lineStyle = DashedLine(), $legendText='Alert')
+AddRelTag(Synchronous, $textColor='black', $lineColor='dimgrey',$legendText='Synchronous')
+AddRelTag(Asynchronous,$textColor='black', $lineColor='dimgrey', $lineStyle = DashedLine(), $legendText='Asynchronous')
+Container(Container1, Container1, Application,"go")
+ContainerDb(Container2, Container2, Storage,"BigQuery")
+Container_Boundary(Check_this_out, "Check this out"){
+Container(Container3, Container3, Service, $tags='Service',"Restful API")
+ContainerDb(Container4, Container4, Storage,"Spanner")
+}
+Rel(Container1,Container3,"make it happen","Synchronous", $tags='Synchronous')
+Rel(Container3,Container2,"","Asynchronous", $tags='Asynchronous')
+Rel(Container3,Container4,"","Alert", $tags='Alert')
+SHOW_LEGEND()
+@enduml
+
+

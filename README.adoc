@@ -48,20 +48,91 @@ The following steps outline the process of creating the sequence diagram within 
 .Sample Generated Sequence Diagram
 image:xxxx-sequence-diagram.png[Enterprise Architect Sample]
 
-NOTE: EA’s does have some restrictions on the way the flows can be laid out using the API.. and this is especially evident when using nested InteractionFragments. So please check the produced diagram to ensure correct flow placement.
+NOTE: EA’s does have some restrictions on the way the flows can be laid out using the GUI.. and this is especially evident when using nested InteractionFragments. So please check the produced diagram to ensure correct flow placement.
 
-=== Create a PlantUML Script from a Sequence Diagram In Enterprise Architecht
+=== Create a C4 Container Diagram in EA using PlantUML 
+
+The https://c4model.com/[C4 Model] is a lean graphical notation technique for modelling the architecture of software systems.
+
+Sparxsystem provides a free https://www.sparxsystems.eu/c4[C4 MDG download] which defined the C4 shape toolbox and associated diagrams.
+
+.Sample C4 Diagram using the LieberLieber C4 MDG
+image:C4 in EA.png[Sample C4 Diagram]
+
+But wait.. What if you already had your context or container view in plantuml script form. There is no way that you will want to maintain 2 verisons of the same document. 
+
+Say I had the following script.. how long would it take to manually produce the diagram in EA.
+
+----
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+'!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Dynamic.puml
+
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+'LAYOUT_TOP_DOWN()
+'LAYOUT_AS_SKETCH()
+'LAYOUT_WITH_LEGEND()
+
+title C4 Container View via script
+
+AddElementTag("Service", $shape=EightSidedShape(), $bgColor='Lightblue',$legendText='service (eight sided)')
+
+AddRelTag(Alert, $textColor="red", $lineColor="red", $lineStyle = DashedLine(), $legendText="console triggered")
+AddRelTag(Synchronous, $textColor="black", $lineColor="dimgrey",$legendText="Synchronous")
+AddRelTag(Asynchronous,$textColor="black", $lineColor="dimgrey", $lineStyle = DashedLine(), $legendText="Asynchronous")
+
+Container_Boundary(boundary, boundary){
+Container(Container1, "Container one", "Application")
+Container_Boundary(boundary2, boundary2){
+Container(Container3, "Container three","service", $tags='Service', "description")
+ContainerDb_Ext(Container4, "Container four","storage", "desc")
+Container(Container5, "Container five","Application", "container 5 description")
+Container(Container6, "Container six","Application", "container 6 description")
+}
+}
+ContainerDb_Ext(Container2, "Container two","storage", "desc")
+
+Rel(Container1,Container3,"blah","Synchronous", $tags=Synchronous)
+Rel(Container1,Container5,"blah5","Synchronous", $tags=Synchronous)
+Rel(Container1,Container6,"blah6","Synchronous", $tags=Synchronous)
+Rel_R(Container3,Container4,"blah2","Alert", $tags=Alert)
+Rel(Container3,Container2,"","Asynchronous", $tags=Asynchronous)
+SHOW_LEGEND()
+@enduml
+----
+
+The following steps outline the process of creating the C4 diagram within Enterprise Architect:
+
+. create a new C4 diagram
+. add a note element and paste the desired plantUML script into it
+. right click the Note element and select *_Run PlantUML Script_* the following diagram is created
+
+.Sample C4 Container Diagram via the Run PlantUML Script
+image:Run PlantUML script output.png[Sample C4 Diagram]
+
+Some limitations/half baked functionality..
+
+* I did not nail the layout of objects especially if there are nested boundaries. I thought the EA GUI would do heaps better job.
+* I focussed on the Container view (class).. so Context and Component views could be buggy
+* no dynamic sterotype creating
+* sterotyped connectors do not pickup the UML styling
+
+=== Create a PlantUML Script from a Sequence or C4 Diagram In Enterprise Architecht
 
 Model Management however is not just about being able to import sequence diagrams. The use case may exist in your organisation where diagrams require to be validated against some Enterprise standards, checking for duplicates within the model, for duplication against an Application Portfolio, naming standards, organisational context; all metadata which extends beyond the basic sequence diagram which has been described.
 
 Hence these diagrams and/or the underlying modelling elements may well be updated within Modelling environment and there is a need to refresh one or more PlantUML scripts.
 
-The following steps outline the process of generating a PlantUML script from a sequence diagram within EA:
+The following steps outline the process of creating PlantUML script from a sequence diagram within EA:
 
 . open up an existing sequence diagram
 . add a note element to the sequence diagram
-. right click the Note element and select “Generate PlantUML script”
+. right click the Note element and select *_Create PlantUML script_*
 . the script will parse the diagram objects and links with the results loaded into the note object.
+
+The above steps also apply to C4 Diagrams.
 
 .Sample Generated Generation of PlantUML Script
 image:generatePlantUMLscript.gif[]]
@@ -98,7 +169,6 @@ The common functions available are:
 
 The following features will be added overtime.
 
-* dialogue box to select PlantUML script from file the source repository or confluence page
 * support other diagram types e.g. use case, class diagrams
 * color coding activations
 * Notes overlay of one or more timelines
@@ -115,8 +185,8 @@ Activate the the script manager window with EA
 
 . Create a new Diagram Scripting Group and load it up with: 
 * Run PlantUML Script
-* Generate PlantUML Script
-. Creates a new Normal Scripting Group and name it *_PlantUML_* and load it up with the variouos diagram specific scrfipts as per thre scripting manager screen shot
+* Create PlantUML Script
+. Creates a new Normal Scripting Group and name it *_PlantUML_* and load it up with the various diagram specific scripts as per the scripting manager screen shot
 . Create another normal VBScript group, this one is to be called *_Common_* and load it up with the following:
 * color-picker
 * Print-Array

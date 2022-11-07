@@ -1,0 +1,21 @@
+@startuml
+'!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Component.puml
+
+'LAYOUT_TOP_DOWN()
+'LAYOUT_AS_SKETCH()
+LAYOUT_WITH_LEGEND()
+title Model Helper Component View
+AddElementTag('Service', $shape=EightSidedShape(), $legendText='service (eight sided)')
+AddRelTag(Alert, $textColor='red', $lineColor='red', $lineStyle = DashedLine(), $legendText='Alert')
+AddRelTag(Synchronous, $textColor='black', $lineColor='dimgrey',$legendText='Synchronous')
+AddRelTag(Asynchronous,$textColor='black', $lineColor='dimgrey', $lineStyle = DashedLine(), $legendText='Asynchronous')
+Container_Boundary(ModelHelper, "Model Helper"){
+Component(c1, "Generate C4 Diagram\n via PlanUML","c","desc" )
+Component(c2, "Export C4 to PlantUML", )
+}
+SHOW_LEGEND()
+@enduml
+
