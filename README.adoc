@@ -48,7 +48,7 @@ The following steps outline the process of creating the sequence diagram within 
 .Sample Generated Sequence Diagram
 image:xxxx-sequence-diagram.png[Enterprise Architect Sample]
 
-NOTE: EA’s does have some restrictions on the way the flows can be laid out using the API.. and this is especially evident when using nested InteractionFragments. So please check the produced diagram to ensure correct flow placement.
+NOTE: EA’s does have some restrictions on the way the flows can be laid out using the GUI.. and this is especially evident when using nested InteractionFragments. So please check the produced diagram to ensure correct flow placement.
 
 === Create a C4 Container Diagram in EA using PlantUML 
 
@@ -58,6 +58,10 @@ Sparxsystem provides a free https://www.sparxsystems.eu/c4[C4 MDG download] whic
 
 .Sample C4 Diagram using the LieberLieber C4 MDG
 image:C4 in EA.png[Sample C4 Diagram]
+
+But wait.. What if you already had your context or container view in plantuml script form. There is no way that you will want to maintain 2 verisons of the same document. 
+
+Say I had the following script.. how long would it take to manually produce the diagram in EA.
 
 ----
 @startuml
@@ -98,6 +102,12 @@ Rel(Container3,Container2,"","Asynchronous", $tags=Asynchronous)
 SHOW_LEGEND()
 @enduml
 ----
+
+The following steps outline the process of creating the C4 diagram within Enterprise Architect:
+
+. create a new C4 diagram
+. add a note element and paste the desired plantUML script into it
+. right click the Note element and select *_Run PlantUML Script_* the following diagram is created
 
 .Sample C4 Container Diagram via the Run PlantUML Script
 image:Run PlantUML script output.png[Sample C4 Diagram]
