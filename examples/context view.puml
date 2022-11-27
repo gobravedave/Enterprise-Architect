@@ -1,50 +1,13 @@
 @startuml
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
-' uncomment the following line and comment the first to use locally
-' !include C4_Context.puml
-
-'LAYOUT_TOP_DOWN()
-'LAYOUT_AS_SKETCH()
-'LAYOUT_WITH_LEGEND()
-title Model Helper Context View
-AddElementTag('Service', $shape=EightSidedShape(), $legendText='service (eight sided)')
-AddRelTag(Alert, $textColor='red', $lineColor='red', $lineStyle = DashedLine(), $legendText='Alert')
-AddRelTag(Synchronous, $textColor='black', $lineColor='dimgrey',$legendText='Synchronous')
-AddRelTag(Asynchronous,$textColor='black', $lineColor='dimgrey', $lineStyle = DashedLine(), $legendText='Asynchronous')
-Person(mod, Modeller)
-System(helper, "model helper","Set of tools and knowledge articles to help create beautiful and intuitive models easily.")
-System(GitHub, GitHub)
-System(Confluence, Confluence)
-System(EA, "Enterprise Archtecht",$descr="modelling tool provided by sparxs systems")
-System(PlantUML, PlantUML)
-System(vsc, "Visual Studio Code")
-System(docs, "Architecture Documents")
-Person(critics, "Interested Parties")
-Rel(mod,helper,"use","")
-Rel(helper,PlantUML,"extends","")
-Rel(helper,EA,"extends","")
-Rel(mod,vsc,"use","")
-Rel(mod,EA,"use","")
-Rel(vsc,PlantUML,"includes","")
-Rel(vsc,GitHub,"manage source","")
-Rel(GitHub,Confluence,"publish to","")
-Rel(EA,docs,"generates","")
-Rel(critics,docs,"view","")
-Rel(critics,Confluence,"read and comment","")
-SHOW_LEGEND()
-@enduml
-
-
-@startuml Basic Sample
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-Person(admin, "Administrator", $sprite="person2", $link="https://github.com/plantuml-stdlib/C4-PlantUML/blob/master/LayoutOptions.md#hide_person_sprite-or-show_person_spritesprite")
-System_Boundary(c1, "Sample System", $link="https://github.com/plantuml-stdlib/C4-PlantUML") {
-    Container(web_app, "Web Application", "C#, ASP.NET Core 2.1 MVC", $descr="Allows users to compare multiple Twitter timelines", $link="https://github.com/plantuml-stdlib/C4-PlantUML/blob/master/LayoutOptions.md")
+Person(admin, "Administrator", $sprite="person2")
+System_Boundary(c1, "Sample System") {
+    Container(web_app, "Web Application", "C#, ASP.NET Core 2.1 MVC", $descr="Allows users to compare multiple Twitter timelines")
 }
-System(twitter, "Twitter", $link="https://github.com/plantuml-stdlib/C4-PlantUML")
+System(twitter, "Twitter")
 
-Rel(admin, web_app, "Uses", "HTTPS", $link="https://plantuml.com/link")
-Rel(web_app, twitter, "Gets tweets from", "HTTPS", $link="https://plantuml.com/link")
+Rel(admin, web_app, "Uses", "HTTPS")
+Rel(web_app, twitter, "Gets tweets from", "HTTPS")
 @enduml
 
