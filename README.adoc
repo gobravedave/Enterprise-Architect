@@ -59,7 +59,7 @@ Sparxsystem provides a free https://www.sparxsystems.eu/c4[C4 MDG download] whic
 .Sample C4 Diagram using the LieberLieber C4 MDG
 image:C4 in EA.png[Sample C4 Diagram]
 
-But wait.. What if you already had your context or container view in plantuml script form. There is no way that you will want to maintain 2 verisons of the same document. 
+But wait.. What if you already had your context or container view in plantuml script form. There is no way that you will want to maintain 2 versions of the same document. 
 
 Say I had the following script.. how long would it take to manually produce the diagram in EA.
 
@@ -114,10 +114,9 @@ image:Run PlantUML script output.png[Sample C4 Diagram]
 
 Some limitations/half baked functionality..
 
-* I did not nail the layout of objects especially if there are nested boundaries. I thought the EA GUI would do heaps better job.
-* I focussed on the Container view (class).. so Context and Component views could be buggy
 * no dynamic sterotype creating
-* sterotyped connectors do not pickup the UML styling
+* sterotyped person & connectors do not pickup the UML styling
+* adding url links to objects or connectors
 
 === Create a PlantUML Script from a Sequence or C4 Diagram In Enterprise Architecht
 

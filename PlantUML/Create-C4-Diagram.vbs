@@ -4,6 +4,8 @@
 ' Purpose: Sub routine called by the Run PlantUML Script to be used to build a C4 Diagram  
 ' Date: 25-Sep-2022
 '-----------------------------------------'
+' Modifcation Log
+' 27-Nov-2022:	revamp layout, add person type
 
 dim stereotype_array (99,7)		'store stereotypes 
 dim idxS						'stereotype array index
@@ -99,15 +101,14 @@ sub CreateC4Diagram ()
 	Call PrintArray (class_array,0,idxC-1)
 
 	'apply stereotype settings
-	call LOGDebug( "**Stereotype Array**" )
-	Call PrintArray (stereotype_array,0,idxS-1)
+	'call LOGDebug( "**Stereotype Array**" )
+	'Call PrintArray (stereotype_array,0,idxS-1)
 
-	call LOGDebug( "**Relationship Array**" )
-	Call PrintArray (relationship_array,0,idxR-1)
+	'call LOGDebug( "**Relationship Array**" )
+	'Call PrintArray (relationship_array,0,idxR-1)
 	
 	'layout objects based
 	call layout_objects()							'set relative coordinates based nesting of ojects
-	'resize boundary elements
 
 	call LOGDebug( "**Layout Array**" )
 	Call PrintArray (layout_array,0,idxL-1)
@@ -167,18 +168,22 @@ sub create_class(script)
 		classObjectType = "Boundary"
 		classStereotype = replace(word(0),"_"," ")
 	else
-		classObjectType = "Class"
-		if instr(word(0),"Container") > 0 then
-			'classObjectType = "Container"
-			classStereotype = "Container"
+		if instr(word(0),"Person") > 0 then
+			classObjectType = "Actor"
+			classStereotype = "Person"
 		else
-			if instr(word(0),"Component") > 0 then
-				'classObjectType = "Component"
+			classObjectType = "Class"
+			if instr(word(0),"Container") > 0 then
+				'classObjectType = "Container"
+				classStereotype = "Container"
 			else
-				if instr(word(0),"System") > 0 then
-					'classObjectType = "System"
-					classStereotype = "System"
+				if instr(word(0),"Component") > 0 then
+					'classObjectType = "Component"
 				else
+					if instr(word(0),"System") > 0 then
+						'classObjectType = "System"
+						classStereotype = "System"
+					end if
 				end if
 			end if
 		end if
@@ -226,6 +231,7 @@ sub create_class(script)
 	if Ubound(strArgs) > 2 then
 		classNotes = trim(strArgs(Ubound(strArgs)))
 		classNotes = replace(classNotes, """", "")
+		classNotes = replace(classNotes, "$descr=", "")
 	else
 		classNotes = ""
 	end if
@@ -310,7 +316,7 @@ sub end_of(script)
 end sub
 
 sub create_relationship(script)
-	call LOGTrace("create_relationship()")
+	call LOGTrace("create_relationship(" & script & ")")
 	dim strRel
 	dim strRelParms
 	dim connID
@@ -324,8 +330,8 @@ sub create_relationship(script)
 		call LOGDebug( "strRel: " & strRel )
 		strRelParms=split(strRel,",")	
 		call LOGDebug( "strRelParms: " & ubound(strRelParms) )
-		relationship_array (idxR,0) = getClassID(strRelParms(0))	'source elementID			
-		relationship_array (idxR,1) = getClassID(strRelParms(1))	'target elementID
+		relationship_array (idxR,0) = getClassID(trim(strRelParms(0)))	'source elementID			
+		relationship_array (idxR,1) = getClassID(trim(strRelParms(1)))	'target elementID
 		if ubound(strRelParms) > 1 then
 			relationship_array (idxR,3) = strRelParms(2)
 			relationship_array (idxR,3) = replace(relationship_array (idxR,3), """", "")
@@ -347,51 +353,109 @@ sub create_relationship(script)
 end sub
 
 sub layout_objects()
+
 	call LOGTrace("layout_Objects()")
 
-	dim level	
-	level=0
+	dim width
+	dim height
+	dim padding
+	dim level
+	dim i 
+	dim j
+	dim left
+	dim right
+	dim top
+	dim bottom
 	
-	'set the hierarchial levels
-	for idxL = 0 to idxC-1	
-		if class_array (idxL,6) = "End" then
-			level=level-1
-		else
-			if class_array (idxL,6) = "Start" then
-				level=level+1
-			end if
-		end if
-		layout_array (idxL,0) = level
-	next
+	width=150
+	height=108
+	padding=40
+	
+	'set the first row
+	layout_array (0,1) = padding
+	layout_array (0,3) = padding * -1
+	if class_array (0,4) = "Boundary" then
+		level = 1
+		layout_array (0,2) = layout_array (0,1) + width + padding
+		layout_array (0,4) = layout_array (0,3) - height - padding
+	else
+		level = 0
+		layout_array (0,2) = layout_array (0,1) + width
+		layout_array (0,4) = layout_array (0,3) - height
+	end if
+	layout_array (0,0) = level	
 
-	layout_array (0,1) = 1
-	layout_array (0,2) = 1
-
-	'set layout based on level..
 	for idxL = 1 to idxC-1	
-		if layout_array (idxL,0) = layout_array (idxL-1,0) then
-			if class_array (idxL-1,6) = "Start" then
-				layout_array (idxL,1) = layout_array (idxL-1,1) + 1
-				layout_array (idxL,2) = layout_array (idxL-1,2) 
-			else
-				layout_array (idxL,1) = layout_array (idxL-1,1)
-				layout_array (idxL,2) = layout_array (idxL-1,2) + 1
+		if class_array (idxL,6) = "End" then
+			call LOGDebug ( "processing end of boundary" )
+			'set the right and bottom of the parent
+			layout_array (idxL,0) = level
+			level = level - 1
+			i = getParent(idxL)
+			'loop thru to resolve right and bottom coorodinates
+			'this needs to have a start tag
+			if class_array (i,6) = "Start" then
+				call LOGDebug ( "resize boundary" )
+				right = layout_array (i,2)
+				bottom = layout_array (i,4)
+				for j = iDXL to i step -1
+					call LOGDebug ( "Checking dimentions of (" &  j & "): " & class_array(j,0) )
+					if layout_array (j,2) > right then
+						right = layout_array (j,2)
+						call LOGDebug ( "Right Adjusted to->" &  right )
+					end if
+					if layout_array (j,4) < bottom then
+						bottom = layout_array (j,4)
+						call LOGDebug ( "Bottom Adjusted to->" &  bottom )
+					end if
+				next
+				layout_array (i,2) = right + padding
+				layout_array (i,4) = bottom - padding
 			end if
 		else
-			if layout_array (idxL,0) > layout_array (idxL-1,0) then
-				layout_array (idxL,1) = layout_array (idxL-1,1) + 1
-				layout_array (idxL,2) = layout_array (idxL-1,2) + 1
+			bottom = getBottom()
+			if class_array (idxL,6) = "Start" then	
+				call LOGDebug ( "processing start of boundary" )
+				level = level + 1
+				layout_array (idxL,0) = level
+				'go up to find relative position.
+				if layout_array (idxL,0) > 1 then
+					'i = getParent(idxL)
+					if class_array (idxL-1,6) = "Start" then
+						left = layout_array (idxL-1,1) + padding
+						top = layout_array (idxL-1,3) - padding
+					else
+						left = layout_array (idxL-1,1) 
+						top = bottom - padding
+					end if
+				else
+					left = layout_array (idxL-1,1)
+					top = bottom - padding
+				end if
+				layout_array (idxL,1) = left + padding		
+				layout_array (idxL,2) = left + width + padding
+				layout_array (idxL,3) = top 
+				layout_array (idxL,4) = top - padding - height - padding
 			else
-				layout_array (idxL,1) = layout_array (idxL-1,1) + 1
-				layout_array (idxL,2) = layout_array (getParent(idxL),2) 
+				'non-boundary object
+				call LOGDebug ( "processing a non-boundary object" )
+				layout_array (idxL,0) = level
+				if class_array (idxL-1,6) = "End" then
+					layout_array (idxL,1) = layout_array (i,1) + padding
+					'resolve bottom 
+					layout_array (idxL,3) = bottom - padding
+				else
+					if class_array (idxL-1,6) = "Start" then
+						layout_array (idxL,1) = layout_array (idxL-1,1) + padding		
+						layout_array (idxL,3) = layout_array (idxL-1,3) - padding
+					else
+						layout_array (idxL,1) = layout_array (idxL-1,2) + padding		
+						layout_array (idxL,3) = layout_array (idxL-1,3) 
+					end if
+				end if
+				layout_array (idxL,2) = layout_array (idxL,1) + width
+				layout_array (idxL,4) = layout_array (idxL,3) - height
 			end if
-		end if
-	next
-
-	for idxL = 0 to idxC-1	
-		if not(class_array (idxL,6) = "End") then
-			layout_array (idxL,3) = getHeight(idxL)
-			layout_array (idxL,4) = getWidth(idxL)
 		end if
 	next
 
@@ -407,30 +471,15 @@ sub build_diagram()
 	dim bottom
 	dim diagramObjectName
 	dim i
-	dim width
-	dim height
-	dim padding
 	set DiagramObjects = currentDiagram.DiagramObjects
-
-	width=150
-	height=108
-	padding=40
 	
 	' Add diagramObjects
 	for i = 0 to idxL-1	
 		if not (class_array(i,6) = "End") then
-			left = (layout_array (i,2)-1) * (width + padding) + 40
-			if layout_array (i,4) = 1 then
-				right = left + width
-			else
-				right = left + ((width + padding) * (layout_array (i,4)+1))
-			end if
-			top = ((layout_array (i,1)-1) * (height+padding) + 40)*(-1)
-			if layout_array (i,3) = 1 then
-				bottom = top + height
-			else
-				bottom = top - ((height + padding) * layout_array (i,3)) 
-			end if
+			left = layout_array (i,1)
+			right = layout_array (i,2)
+			top = layout_array (i,3)
+			bottom = layout_array (i,4) 
 			diagramObjectName= "l=" & left & ";r=" & right & ";t=" & top & ";b=" & bottom
 			call LOGDebug ( "ElementId=" & class_array (i,0) & "-Left(" & left & ");Right(" & right & ");top(" & top & ");Bottom(" & bottom & ")")
 			set diagramObject = currentDiagram.DiagramObjects.AddNew(diagramObjectName, class_array (i,4))
@@ -439,18 +488,13 @@ sub build_diagram()
 			diagramObjects.Refresh
 		end if
 	next
-
-	' Add diagramLinks
-	for i = 0 to idxR-1	
-
-	next
 	
 	currentDiagram.Update
 
 end sub
 
 function getParent(startFrom)
-	'call LOGTrace("getParent(" & startFrom & ")")
+	call LOGTrace("getParent(" & startFrom & ")")
 
 	'return the index of the immediate parent by going back up the layout_array based on level
 	Dim i
@@ -458,77 +502,35 @@ function getParent(startFrom)
 	
 	getParent=startFrom
 	level = layout_array (startFrom,0)
+	call LOGDebug ( "Level (" &  startFrom & "): " & level )
 
 	for i = startFrom-1 to 0 step -1
-		if layout_array (i,0) = level then
+		call LOGDebug ( "Checking (" &  i & ")" )
+		if layout_array (i,0) = level _ 
+		and class_array (i,6) = "Start" then
 			getParent=i
 			exit for
 		end if
 	next 
 	
-	'call LOGTrace("getParent=" & getParent)
+	call LOGTrace("getParent=" & getParent)
 
 end function
 
-function getHeight(startFrom)
-	call LOGTrace("getHeight(" & startFrom & ")")
+function getBottom()
+	call LOGTrace("getBottom()")
 
-	'return the number of rows for this level (including sublevels)
 	Dim i
-	dim top
-	dim bottom
 	
-	if class_array (startFrom,6) = "Start" then
-		top = layout_array (startFrom,1)
-		'call LOGDebug ( "top for startFrom(" & startFrom & ")=" & top & " for level=" & layout_array (startFrom,0))
-		for i = startFrom+1 to idxC
-			'call LOGDebug ( "getheight loop for i= " & i & " of " & idxC & " level=" & layout_array (i,0) & " cont ind=" & class_array (i,6))
-			if	class_array (i,6) = "End" then
-				if	layout_array (i,0) < layout_array (startFrom,0) then
-					bottom=layout_array (i,1)
-					'call LOGDebug ( "bottom for i=(" & i & ")=" & bottom)
-					getHeight = bottom-top
-					exit for
-				end if
-			end if
-		next
-	else
-		if class_array (startFrom,6) = "" then
-			getHeight=1
+	getBottom=0
+	for i = 0 to idxL 
+		call LOGDebug ( "Checking (" &  i & ")" )
+		if layout_array (i,4) < getBottom then 
+			getBottom = layout_array (i,4)
 		end if
-	end if
+	next 
 	
-	call LOGTrace("getHeight=" & getHeight)
-
-end function
-
-function getWidth(startFrom)
-	call LOGTrace("getWidth(" & startFrom & ")")
-
-	'return the max number of cols for a level
-	Dim i
-	Dim left
-	Dim right
-	left = layout_array (startFrom,2)
-	right = left+1
-	'call LOGDebug ( "left for startFrom(" & startFrom & ")=" & left & " for level=" & layout_array (startFrom,0))
-
-	if class_array (startFrom,6) = "Start" then
-		for i = startFrom to idxC
-			'call LOGDebug ( "getwidth loop for i= " & i & " of " & idxC & " level=" & layout_array (i,0) & " cont ind=" & class_array (i,6))
-			if layout_array (i,2) > right then		
-				right = layout_array (i,2)
-			end if
-			if class_array (i,6) = "End" then
-				if layout_array (i,0) < layout_array (startFrom,0) then
-					exit for
-				end if
-			end if
-			'call LOGDebug ( "getwidth loop for i= " & i & " of " & idxC & " left=" & left & " right=" & right)			
-		next 
-	end if
-	getWidth = right - left
-	call LOGTrace("getWidth=" & getWidth)
+	call LOGTrace("Bottom=" & getBottom)
 
 end function
 

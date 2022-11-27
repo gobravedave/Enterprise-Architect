@@ -81,5 +81,3 @@ Rel(Container3,Container2,"","Asynchronous", $tags='Asynchronous')
 Rel(Container3,Container4,"","Alert", $tags='Alert')
 SHOW_LEGEND()
 @enduml
-
-
